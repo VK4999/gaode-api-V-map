@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    网络安全配置 — 允许本地 127.0.0.1 HTTP 明文通信
+    gaode地图 API 通过 HTTPS 加载，不受此配置影响
+-->
+<network-security-config>
+    <!-- 允许所有域名的 cleartext（开发阶段） -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- gaode地图 API 强制 HTTPS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">amap.com</domain>
+        <domain includeSubdomains="true">webapi.amap.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

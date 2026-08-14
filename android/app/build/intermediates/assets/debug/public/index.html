@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>V·地图</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+
+        /* ---- 垂直布局：地图下 + 面板上 ---- */
+        #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+
+        /* ---- 地图区域（下方） ---- */
+        #map-container { flex: 1; min-height: 0; position: relative; }
+        #map { width: 100%; height: 100%; }
+
+        /* ---- 控制面板（上方，可折叠） ---- */
+        #panel {
+            width: 100%; max-height: 60vh;
+            background: #1e1e2e; color: #cdd6f4;
+            display: flex; flex-direction: column;
+            border-top: 2px solid #313244;
+            transition: max-height 0.25s;
+        }
+        #panel.collapsed #panel-tabs,
+        #panel.collapsed #panel-content { display: none; }
+        #panel.collapsed { max-height: none; }
+        #panel-header {
+            background: linear-gradient(135deg, #89b4fa, #cba6f7);
+            color: #1e1e2e; padding: 8px 14px;
+            font-size: 14px; font-weight: bold; text-align: center;
+            flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+        }
+        #panel-toggle {
+            background: none; border: none; color: #1e1e2e; font-size: 18px;
+            cursor: pointer; padding: 0 4px; line-height: 1;
+        }
+        #panel-tabs {
+            display: flex; flex-shrink: 0;
+            background: #181825; border-bottom: 1px solid #313244;
+        }
+        #panel-tabs button {
+            flex: 1; padding: 8px 2px; border: none; cursor: pointer;
+            background: transparent; color: #6c7086; font-size: 11px;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        #panel-tabs button:hover { color: #cdd6f4; background: #1e1e2e; }
+        #panel-tabs button.active { color: #89b4fa; border-bottom: 2px solid #89b4fa; background: #1e1e2e; }
+
+        #panel-content {
+            flex: 1; overflow-y: auto; padding: 8px;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ---- 通用组件样式 ---- */
+        .group-box {
+            background: #181825; border: 1px solid #313244;
+            border-radius: 8px; padding: 12px; margin-bottom: 10px;
+        }
+        .group-title {
+            font-size: 13px; font-weight: bold; color: #a6adc8;
+            margin-bottom: 8px;
+        }
+        label {
+            font-size: 12px; color: #9399b2; display: block; margin-bottom: 4px;
+        }
+        input[type="text"], input[type="password"], select {
+            width: 100%; padding: 8px 10px; border: 1px solid #45475a;
+            border-radius: 6px; background: #1e1e2e; color: #cdd6f4;
+            font-size: 13px; margin-bottom: 6px; outline: none;
+        }
+        input:focus, select:focus { border-color: #89b4fa; }
+        select { cursor: pointer; }
+
+        button {
+            padding: 8px 14px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 13px; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #89b4fa; color: #1e1e2e; font-weight: bold; width: 100%;
+        }
+        .btn-primary:hover { background: #74c7ec; }
+        .btn-danger {
+            background: transparent; color: #f38ba8; border: 1px solid #f38ba8; width: 100%;
+        }
+        .btn-danger:hover { background: #f38ba8; color: #1e1e2e; }
+        .btn-compact {
+            background: #313244; color: #cdd6f4; font-size: 11px; padding: 5px 10px;
+        }
+        .btn-compact:hover { background: #45475a; }
+        .btn-quick {
+            background: #313244; color: #a6adc8; font-size: 11px;
+            padding: 4px 8px; border-radius: 4px;
+        }
+        .btn-quick:hover { background: #45475a; color: #cdd6f4; }
+
+        .list-box {
+            border: 1px solid #45475a; border-radius: 6px;
+            background: #11111b; max-height: 130px; overflow-y: auto;
+            font-size: 12px; margin-bottom: 6px;
+        }
+        .list-item {
+            padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #313244;
+            color: #a6adc8;
+        }
+        .list-item:hover { background: #1e1e2e; color: #cdd6f4; }
+        .list-item:last-child { border-bottom: none; }
+
+        .info-text {
+            font-size: 12px; color: #6c7086; padding: 4px 0; line-height: 1.5;
+        }
+        .coord-display {
+            font-family: "Consolas", "Monaco", monospace; font-size: 12px;
+            background: #11111b; border: 1px solid #45475a; border-radius: 6px;
+            padding: 10px; color: #a6e3a1; margin-bottom: 6px;
+        }
+
+        .quick-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 4px;
+        }
+
+        .toggle-row {
+            display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+        }
+
+        /* ---- 登录弹窗 ---- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: flex; align-items: center;
+            justify-content: center; z-index: 9999;
+        }
+        #login-overlay.hidden { display: none; }
+        #login-box {
+            background: #1e1e2e; border: 1px solid #45475a; border-radius: 12px;
+            padding: 30px; width: 420px; color: #cdd6f4;
+        }
+        #login-box h2 {
+            color: #89b4fa; margin-bottom: 8px; text-align: center;
+        }
+        #login-box .hint {
+            font-size: 12px; color: #6c7086; margin-bottom: 16px; text-align: center; line-height: 1.6;
+        }
+        #login-box .hint a { color: #89b4fa; }
+        #login-status {
+            font-size: 12px; color: #a6e3a1; text-align: center; margin-top: 8px;
+        }
+        #login-status.error { color: #f38ba8; }
+
+        /* ---- 响应式：原电脑桌面端左右布局 ---- */
+        @media (min-width: 801px) {
+            #app { flex-direction: row; }
+            #panel {
+                width: 380px; min-width: 350px; height: 100%; max-height: none;
+                border-top: none; border-left: 2px solid #313244;
+            }
+            #map-container { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 原左侧控制面板 -->
+        <div id="panel">
+            <div id="panel-header">🗺️ 地图控制中心 <button id="panel-toggle" onclick="document.getElementById('panel').classList.toggle('collapsed');this.textContent=document.getElementById('panel').classList.contains('collapsed')?'▲':'▼'">▼</button></div>
+            <div id="panel-tabs">
+                <button class="active" data-tab="tab-map">📍 地图</button>
+                <button data-tab="tab-search">🔍 搜索</button>
+                <button data-tab="tab-route">🚗 路线</button>
+                <button data-tab="tab-tools">🛠️ 工具</button>
+            </div>
+            <div id="panel-content">
+                <!-- 地图控制 -->
+                <div class="tab-content active" id="tab-map">
+                    <div class="group-box">
+                        <div class="group-title">🎨 地图样式</div>
+                        <label>地图样式：</label>
+                        <select id="style-select">
+                            <option value="street">🏙️ 街道地图（2D）</option>
+                            <option value="3d">🏢 3D 楼宇地图</option>
+                            <option value="terrain">⛰️ 3D 地形图</option>
+                            <option value="satellite">🛰️ 卫星影像</option>
+                        </select>
+                    </div>
+                    <div class="group-box">
+                        <div class="group-title">🛞 路况图层</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <button class="btn-compact" id="btn-toggle-traffic" onclick="toggleTrafficUI()" style="flex:1;">显示路况图层</button>
+                        </div>
+                    </div>
+                    <button class="btn-danger" onclick="locateCurrentPosition()" style="width:100%;margin-bottom:6px;">📍 定位当前位置</button>
+                    <button class="btn-danger" onclick="clearAllMarkers()">🗑️ 清除所有标记</button>
+                    <div class="info-text" style="margin-top:8px;" id="location-info">地址: 暂无</div>
+                </div>
+
+                <!-- 搜索与标记 -->
+                <div class="tab-content" id="tab-search">
+                    <div class="group-box">
+                        <div class="group-title">🔍 地点搜索</div>
+                        <input type="text" id="search-input" placeholder="输入地点，如：北京天安门、海口吾悦广场星巴克" onkeydown="if(event.key==='Enter') searchPOIFromUI()">
+                        <button class="btn-danger" onclick="searchPOIFromUI()">🔍 搜索地点</button>
+
+                    </div>
+                    <div class="group-box">
+                        <div class="group-title">📜 搜索历史</div>
+                        <div class="list-box" id="history-list"></div>
+                        <button class="btn-danger" onclick="clearSearchHistory()">🗑️ 清除历史</button>
+                    </div>
+                    <div class="group-box">
+                        <div class="group-title">📍 地图标记</div>
+                        <div class="info-text">💡 直接点击地图即可添加标记并获取坐标信息</div>
+                        <div class="list-box" id="marker-list"></div>
+                        <button class="btn-danger" onclick="clearMarkerRecords()">🗑️ 清空标记历史</button>
+                    </div>
+                </div>
+
+                <!-- 路线规划 -->
+                <div class="tab-content" id="tab-route">
+                    <div class="group-box">
+                        <div class="group-title">🚗 路线规划</div>
+                        <label>出行方式：</label>
+                        <select id="travel-mode-select">
+                            <option value="driving">🚗 驾车</option>
+                            <option value="walking">🚶 步行</option>
+                            <option value="riding">🚴 骑行</option>
+                            <option value="transit">🚇 公交地铁</option>
+                        </select>
+                        <label>起点：</label>
+                        <div style="display:flex;gap:6px;">
+                            <input type="text" id="route-start" placeholder="例如：北京鸟巢" style="flex:3;">
+                            <button class="btn-compact" onclick="locateForRouteStart()" style="flex:1;padding:8px 4px;">📍 定位</button>
+                        </div>
+                        <label>终点：</label>
+                        <input type="text" id="route-end" placeholder="例如：北京国贸CBD">
+                    </div>
+                    <div class="group-box">
+                        <button class="btn-primary" onclick="planRouteFromUI()" style="margin-bottom:6px;">🚗 规划路线</button>
+                        <button class="btn-danger" onclick="clearCurrentRoute()">🧹 清除路线</button>
+                    </div>
+                    <div class="group-box" id="pref-group">
+                        <div class="group-title">⚙️ 路线偏好（驾车专用）</div>
+                        <label>路线策略：</label>
+                        <select id="strategy-select">
+                            <option value="LEAST_TIME">🚀 最快捷</option>
+                            <option value="LEAST_DISTANCE">📏 最短距离</option>
+                            <option value="LEAST_FEE">💰 最经济</option>
+                            <option value="REAL_TRAFFIC">🚦 避开拥堵</option>
+                        </select>
+                        <div class="toggle-row"><input type="checkbox" id="avoid-highway"> <label for="avoid-highway" style="display:inline">避开高速公路</label></div>
+                        <div class="toggle-row"><input type="checkbox" id="avoid-tolls"> <label for="avoid-tolls" style="display:inline">避开收费路段</label></div>
+                    </div>
+
+                    <!-- 路线方案列表 -->
+                    <div class="group-box" id="route-plans-group" style="display:none;">
+                        <div class="group-title">📋 路线方案</div>
+                        <div class="list-box" id="route-plans-list"></div>
+                    </div>
+                    <!-- 导航步骤 -->
+                    <div class="group-box" id="nav-steps-group" style="display:none;">
+                        <div class="group-title">🧭 导航步骤</div>
+                        <div class="list-box" id="nav-steps-list" style="max-height:200px;"></div>
+                    </div>
+                    <!-- 路线收藏 -->
+                    <div class="group-box">
+                        <div class="group-title">⭐ 路线收藏</div>
+                        <button class="btn-primary" onclick="saveFavorite()">💾 收藏当前路线</button>
+                        <div class="list-box" id="favorites-list"></div>
+                        <button class="btn-danger" onclick="deleteSelectedFavorite()">删除选中收藏</button>
+                    </div>
+                    <div class="group-box" id="time-group">
+                        <div class="group-title">⏰ 出发时间</div>
+                        <div class="toggle-row">
+                            <input type="radio" name="departure" id="now-radio" checked onchange="toggleDepartureTime()"> <label for="now-radio" style="display:inline">立即出发</label>
+                        </div>
+                        <div class="toggle-row">
+                            <input type="radio" name="departure" id="scheduled-radio" onchange="toggleDepartureTime()"> <label for="scheduled-radio" style="display:inline">预计出发：</label>
+                            <input type="datetime-local" id="departure-datetime" disabled style="width:auto;flex:1;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 工具箱 -->
+                <div class="tab-content" id="tab-tools">
+                    <div class="group-box">
+                        <div class="group-title">📐 坐标工具</div>
+                        <div class="info-text">💡 在地图上移动鼠标或点击以获取坐标</div>
+                        <label>当前坐标：</label>
+                        <div class="coord-display" id="coord-display">经度: 0.000000<br>纬度: 0.000000</div>
+                        <button class="btn-compact" onclick="copyCoordinate()">📋 复制坐标</button>
+                    </div>
+                    <div class="group-box">
+                        <div class="group-title">📏 测距工具</div>
+                        <div class="info-text">💡 启用后在地图上点击多个点进行测距</div>
+                        <button class="btn-primary" id="btn-measure" onclick="toggleMeasurement()">📏 启用测距</button>
+                        <button class="btn-danger" onclick="clearMeasurement()" style="margin-top:4px;">🧹 清除测距</button>
+                        <button class="btn-danger" onclick="clearAllMarkers()" style="margin-top:4px;">🗑️ 清除所有标记</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 原右侧地图 -->
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2>🔑 用户登录</h2>
+            <div class="hint">
+                输入您的Web端(JS API) Key<br>
+                申请地址：<a href="https://lbs.amap.com/" target="_blank">https://lbs.amap.com/</a>
+            </div>
+            <input type="text" id="login-key" placeholder="输入您的API Key">
+            <input type="password" id="login-secret" placeholder="输入您的安全密钥（可选）">
+            <button class="btn-primary" onclick="doLogin()" style="margin-top:8px;">登录</button>
+            <div id="login-status"></div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- JavaScript -->
+    <!-- ================================================================ -->
+    <script>
+        // =====================
+        // 原生 GPS 注入接口 — Android 通过 evaluateJavascript 调用
+        // =====================
+        window.injectLocation = function(lng, lat) {
+            if (!AppState.map) { console.log('[JS] map未就绪，跳过定位注入'); return; }
+            // 移除旧的"我的位置"标记（避免重复）
+            AppState.markers = AppState.markers.filter(m => {
+                if (m.getTitle() === '我的位置') { m.setMap(null); return false; }
+                return true;
+            });
+            // WGS-84 (GPS) → GCJ-02 (gaode坐标系)
+            AMap.convertFrom([lng, lat], 'gps', function(status, result) {
+                if (status === 'complete' && result.locations) {
+                    const gcj = result.locations[0];
+                    lng = gcj.lng; lat = gcj.lat;
+                }
+                AppState.map.setZoomAndCenter(15, [lng, lat]);
+                const marker = addMarker(lng, lat, '我的位置');
+                AppState.currentLng = lng;
+                AppState.currentLat = lat;
+                document.getElementById('coord-display').textContent =
+                    `经度: ${lng.toFixed(6)}\n纬度: ${lat.toFixed(6)}`;
+                AppState.geocoder.getAddress([lng, lat], (status, result) => {
+                    const addr = (status === 'complete' && result.info === 'OK' && result.regeocode?.formattedAddress)
+                        ? result.regeocode.formattedAddress : '我的位置';
+                    const label = addr !== '我的位置' ? addr + '（我的位置）' : '我的位置';
+                    marker.setLabel({
+                        content: `<div style="background:#313244;color:#cdd6f4;padding:3px 8px;border-radius:4px;font-size:11px;white-space:nowrap;">${label}</div>`,
+                        direction: 'top',
+                        offset: new AMap.Pixel(0, -8)
+                    });
+                    document.getElementById('location-info').textContent =
+                        `位置信息: (${lng.toFixed(6)}, ${lat.toFixed(6)})\n- ${addr}（我的位置）`;
+                    // GPS定位后覆写搜索城市（比IP定位更准）
+                    if (status === 'complete' && result.regeocode?.addressComponent?.city) {
+                        const city = result.regeocode.addressComponent.city;
+                        AppState.placeSearch.setCity(city);
+                        setCityDisplay(city);
+                    }
+                    // 添加定位记录（不删除历史）
+                    AppState.markerRecords.unshift({ lng, lat, name: label, address: addr });
+                    if (AppState.markerRecords.length > 10) AppState.markerRecords.length = 10;
+                    LocalBackend.saveMarkers(AppState.markerRecords);
+                    renderMarkerList();
+                });
+                log('原生GPS已注入: ' + lng.toFixed(6) + ', ' + lat.toFixed(6));
+            });
+        };
+
+        // 原生 GPS 注入 — 路线起点定位（Android 原生调用）
+        window.injectLocationForRoute = function(lng, lat) {
+            // WGS-84 (GPS) → GCJ-02 (gaode坐标系)
+            AMap.convertFrom([lng, lat], 'gps', function(status, result) {
+                let gcjLng = lng, gcjLat = lat;
+                if (status === 'complete' && result.locations) {
+                    gcjLng = result.locations[0].lng;
+                    gcjLat = result.locations[0].lat;
+                }
+                if (AppState.geocoder) {
+                    AppState.geocoder.getAddress([gcjLng, gcjLat], (status, result) => {
+                        const addr = (status === 'complete' && result.info === 'OK') ? (result.regeocode?.formattedAddress || '我的位置') : '我的位置';
+                        document.getElementById('route-start').value = addr;
+                        log('已定位起点: ' + addr);
+                    });
+                } else {
+                    document.getElementById('route-start').value = `${gcjLat.toFixed(4)},${gcjLng.toFixed(4)}`;
+                }
+            });
+        };
+
+        // =====================
+        // 本地存储后端替代（无需 Python 后端，原python被替换）
+        // =====================
+        const LocalBackend = {
+            getConfig() {
+                try { return JSON.parse(localStorage.getItem('amap_config') || '{}'); } catch(e) { return {}; }
+            },
+            saveConfig(cfg) {
+                localStorage.setItem('amap_config', JSON.stringify(cfg));
+            },
+            getHistory() {
+                try { return JSON.parse(localStorage.getItem('amap_history') || '[]'); } catch(e) { return []; }
+            },
+            saveHistory(list) {
+                localStorage.setItem('amap_history', JSON.stringify(list));
+            },
+            addHistory(keyword) {
+                const h = this.getHistory().filter(i => i.keyword !== keyword);
+                h.unshift({ keyword, timestamp: new Date().toISOString(), count: 1 });
+                this.saveHistory(h.slice(0, 10));
+            },
+            getFavorites() {
+                try { return JSON.parse(localStorage.getItem('amap_favorites') || '[]'); } catch(e) { return []; }
+            },
+            saveFavorites(list) {
+                localStorage.setItem('amap_favorites', JSON.stringify(list));
+            },
+            addFavorite(data) {
+                const f = this.getFavorites();
+                data.id = Math.random().toString(36).slice(2, 10);
+                data.createdAt = new Date().toISOString();
+                data.usageCount = 0;
+                f.push(data);
+                this.saveFavorites(f);
+                return data.id;
+            },
+            loadFavorite(id) {
+                const f = this.getFavorites().find(x => x.id === id);
+                if (f) { f.usageCount = (f.usageCount || 0) + 1; this.saveFavorites(this.getFavorites().map(x => x.id === id ? f : x)); }
+                return f;
+            },
+            deleteFavorite(id) {
+                this.saveFavorites(this.getFavorites().filter(x => x.id !== id));
+            },
+            getMarkers() {
+                try { return JSON.parse(localStorage.getItem('amap_markers') || '[]'); } catch(e) { return []; }
+            },
+            saveMarkers(list) {
+                localStorage.setItem('amap_markers', JSON.stringify(list));
+            }
+        };
+
+        // =====================
+        // 全局状态管理
+        // =====================
+        const AppState = {
+            map: null,
+            ws: null,
+            wsConnected: false,
+            reconnectTimer: null,
+            reconnectAttempts: 0,
+            maxReconnectAttempts: 10,
+            reconnectDelay: 2000,
+
+            geocoder: null,
+            placeSearch: null,
+            mouseTool: null,
+
+            navigators: { driving: null, walking: null, riding: null, transfer: null },
+            layers: { traffic: null, satellite: null, roadNet: null, buildings: null },
+
+            markers: [],
+            markerRecords: [],  // 地图标记记录（坐标+名字，类似搜索历史）
+            currentRoute: null,
+
+            routePlanning: {
+                plans: [],
+                selectedIndex: 0,
+                travelMode: "driving"
+            },
+
+            measurement: {
+                enabled: false,
+                drawListener: null
+            },
+
+            searchCache: new Map(),
+            currentLng: 0,
+            currentLat: 0,
+            trafficEnabled: false,
+            apiConfigured: false,
+
+            // 收藏相关
+            favorites: [],
+            selectedFavoriteId: null
+        };
+
+        // =====================
+        // 工具函数
+        // =====================
+        const throttle = (func, delay) => {
+            let lastCall = 0;
+            return function(...args) {
+                const now = Date.now();
+                if (now - lastCall >= delay) { lastCall = now; return func.apply(this, args); }
+            };
+        };
+
+        function log(msg) {
+            console.log(`[JS] ${msg}`);
+            if (AppState.wsConnected) {
+                AppState.ws.send(JSON.stringify({ type: "logMessage", data: msg }));
+            }
+        }
+
+        // =====================
+        // 登录逻辑
+        // =====================
+        async function checkConfig() {
+            const cfg = LocalBackend.getConfig();
+            if (cfg.isConfigured) {
+                AppState.apiConfigured = true;
+                document.getElementById('login-overlay').classList.add('hidden');
+                initApp();
+            }
+        }
+
+        async function doLogin() {
+            const apiKey = document.getElementById('login-key').value.trim();
+            const securityCode = document.getElementById('login-secret').value.trim();
+            const statusEl = document.getElementById('login-status');
+            if (!apiKey) { statusEl.textContent = '⚠️ API Key 不能为空'; statusEl.className = 'error'; return; }
+            LocalBackend.saveConfig({ apiKey, securityJsCode: securityCode, isConfigured: true, center: [116.397428, 39.90923], zoom: 12 });
+            statusEl.textContent = '✅ 登录成功，正在初始化...';
+            AppState.apiConfigured = true;
+            setTimeout(() => { document.getElementById('login-overlay').classList.add('hidden'); initApp(); }, 300);
+        }
+
+        async function skipLogin() {
+            const cfg = LocalBackend.getConfig();
+            if (cfg.isConfigured) {
+                AppState.apiConfigured = true;
+                document.getElementById('login-overlay').classList.add('hidden');
+                initApp();
+            } else {
+                document.getElementById('login-status').textContent = '⚠️ 暂无历史账号，请先登录';
+                document.getElementById('login-status').className = 'error';
+            }
+        }
+
+        // =====================
+        // WebSocket 连接管理
+        // =====================
+        function connectWebSocket() {
+            // WebSocket 可选：后端不在也能正常运行
+            try {
+                const wsUrl = 'ws://127.0.0.1:8080/ws';
+                const ws = new WebSocket(wsUrl);
+                ws.onopen = () => { AppState.wsConnected = true; AppState.ws = ws; AppState.reconnectAttempts = 0; };
+                ws.onmessage = (e) => { try { handleServerMessage(JSON.parse(e.data)); } catch(_) {} };
+                ws.onclose = () => { AppState.wsConnected = false; AppState.ws = null; };
+                ws.onerror = () => {};
+                AppState.ws = ws;
+            } catch(e) {}
+        }
+
+        function scheduleReconnect() {
+            if (AppState.reconnectAttempts >= AppState.maxReconnectAttempts) {
+                log('已达到最大重连次数，停止重连');
+                return;
+            }
+            const delay = Math.min(AppState.reconnectDelay * Math.pow(1.5, AppState.reconnectAttempts), 30000);
+            AppState.reconnectAttempts++;
+            log(`将在 ${(delay/1000).toFixed(1)} 秒后尝试重连 (第 ${AppState.reconnectAttempts} 次)`);
+            AppState.reconnectTimer = setTimeout(connectWebSocket, delay);
+        }
+
+        // =====================
+        // 处理服务器消息
+        // =====================
+        function handleServerMessage(msg) {
+            const { type, data } = msg;
+            switch(type) {
+                case 'initConfig':
+                    // 收到初始化配置后加载地图
+                    initMap(data.apiKey, data.securityJsCode, data.center, data.zoom);
+                    break;
+
+                case 'updateLocationInfo':
+                    document.getElementById('location-info').textContent =
+                        `位置信息：(${data.lng.toFixed(6)}, ${data.lat.toFixed(6)})\n- ${data.address}`;
+                    break;
+
+                case 'coordinateUpdate':
+                    AppState.currentLng = data.lng;
+                    AppState.currentLat = data.lat;
+                    document.getElementById('coord-display').textContent =
+                        `经度: ${data.lng.toFixed(6)}\n纬度: ${data.lat.toFixed(6)}`;
+                    break;
+
+                case 'multiRouteResult':
+                    displayRoutePlans(data.plans);
+                    break;
+
+                case 'navigationSteps':
+                    displayNavSteps(data);
+                    break;
+
+                case 'routeResult':
+                    // 路线基本信息已在 multiRouteResult 中处理
+                    break;
+
+                case 'favoritesUpdated':
+                    AppState.favorites = data;
+                    renderFavorites();
+                    break;
+
+                case 'favoriteLoaded':
+                    loadFavoriteToUI(data);
+                    break;
+            }
+        }
+
+        // =====================
+        // 发送消息到服务器
+        // =====================
+        function sendToServer(type, data) {
+            if (AppState.wsConnected && AppState.ws) {
+                try { AppState.ws.send(JSON.stringify({ type, data })); } catch(_) {}
+            }
+        }
+
+        // =====================
+        // 应用初始化
+        // =====================
+        async function initApp() {
+            connectWebSocket();
+            loadHistory();
+            loadFavorites();
+            loadMarkerRecords();
+            // 直接从 localStorage 获取配置加载地图（无需后端）
+            const cfg = LocalBackend.getConfig();
+            if (cfg.apiKey) {
+                await initMap(cfg.apiKey, cfg.securityJsCode || '', cfg.center || [116.397428,39.90923], cfg.zoom || 12);
+                // 地图加载完成后，通过 Capacitor 自动定位（与按钮定位逻辑一致）
+                setTimeout(() => locateCurrentPosition(), 2000);
+            }
+        }
+
+        // =====================
+        // 搜索历史（localStorage）
+        // =====================
+        function loadHistory() {
+            const data = LocalBackend.getHistory();
+            const listEl = document.getElementById('history-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            data.forEach(item => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.textContent = item.keyword;
+                div.onclick = () => quickSearch(item.keyword);
+                listEl.appendChild(div);
+            });
+        }
+
+        function clearSearchHistory() {
+            LocalBackend.saveHistory([]);
+            const listEl = document.getElementById('history-list');
+            if (listEl) listEl.innerHTML = '';
+        }
+
+        // =====================
+        // 路线收藏（localStorage）
+        // =====================
+        function loadFavorites() {
+            AppState.favorites = LocalBackend.getFavorites();
+            renderFavorites();
+        }
+
+        function renderFavorites() {
+            const listEl = document.getElementById('favorites-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            AppState.favorites.forEach(fav => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.textContent = `${fav.name} (${fav.usageCount || 0}次)`;
+                div.onclick = () => { AppState.selectedFavoriteId = fav.id; };
+                div.ondblclick = () => { const f = LocalBackend.loadFavorite(fav.id); if (f) loadFavoriteToUI(f); };
+                listEl.appendChild(div);
+            });
+        }
+
+        function saveFavorite() {
+            const start = document.getElementById('route-start').value.trim();
+            const end = document.getElementById('route-end').value.trim();
+            if (!start || !end) { alert('请先输入起点和终点'); return; }
+            const name = prompt('请输入路线名称', `${start}->${end}`);
+            if (!name) return;
+            LocalBackend.addFavorite({
+                name, start, end, waypoints: [],
+                travelMode: document.getElementById('travel-mode-select').value,
+                preferences: {
+                    strategy: document.getElementById('strategy-select').value,
+                    avoidHighway: document.getElementById('avoid-highway').checked,
+                    avoidTolls: document.getElementById('avoid-tolls').checked
+                }
+            });
+            loadFavorites();
+        }
+
+        function deleteSelectedFavorite() {
+            if (!AppState.selectedFavoriteId) { alert('请先选择要删除的收藏'); return; }
+            if (!confirm('确定要删除该收藏吗？')) return;
+            LocalBackend.deleteFavorite(AppState.selectedFavoriteId);
+            AppState.selectedFavoriteId = null;
+            loadFavorites();
+        }
+
+        // =====================
+        // 地图标记记录（类似搜索历史）
+        // =====================
+        function loadMarkerRecords() {
+            AppState.markerRecords = LocalBackend.getMarkers();
+            renderMarkerList();
+        }
+
+        function renderMarkerList() {
+            const listEl = document.getElementById('marker-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            AppState.markerRecords.forEach((rec, idx) => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.textContent = `${rec.name} (${rec.lng.toFixed(4)}, ${rec.lat.toFixed(4)})`;
+                div.onclick = () => {
+                    // 移动地图
+                    AppState.map.setZoomAndCenter(14, [rec.lng, rec.lat]);
+                    // 更新坐标和信息面板
+                    AppState.currentLng = rec.lng;
+                    AppState.currentLat = rec.lat;
+                    document.getElementById('coord-display').textContent =
+                        `经度: ${rec.lng.toFixed(6)}\n纬度: ${rec.lat.toFixed(6)}`;
+                    document.getElementById('location-info').textContent =
+                        `位置信息: (${rec.lng.toFixed(6)}, ${rec.lat.toFixed(6)})\n- ${rec.address || rec.name}`;
+                    // 添加标记并显示标签（与地图点击一致的样式）
+                    const marker = addMarker(rec.lng, rec.lat, rec.name);
+                    if (marker) {
+                        marker.setLabel({
+                            content: `<div style="background:#313244;color:#cdd6f4;padding:3px 8px;border-radius:4px;font-size:11px;white-space:nowrap;">${rec.name}</div>`,
+                            direction: 'top',
+                            offset: new AMap.Pixel(0, -8)
+                        });
+                    }
+                };
+                listEl.appendChild(div);
+            });
+        }
+
+        function clearMarkerRecords() {
+            AppState.markerRecords = [];
+            LocalBackend.saveMarkers([]);
+            renderMarkerList();
+            log('已清除所有标记记录');
+        }
+
+        // =====================
+        // 地图初始化
+        // =====================
+        async function initMap(apiKey, securityJsCode, center, zoom) {
+            if (AppState.map) return;
+
+            if (!apiKey || apiKey === 'your_api_key_here') {
+                alert('⚠️ API Key 未配置，请重新登录');
+                document.getElementById('login-overlay').classList.remove('hidden');
+                return;
+            }
+
+            log(`API Key: ${apiKey.substring(0, 8)}...`);
+
+            // 设置安全密钥
+            if (securityJsCode && securityJsCode.trim()) {
+                window._AMapSecurityConfig = { securityJsCode };
+                log('已设置安全密钥');
+            }
+
+            // 加载gaode地图 API
+            await loadAMapScript(apiKey);
+            await waitForAMap();
+
+            // 创建地图实例（默认天安门，原生GPS由Android注入）
+            AppState.map = new AMap.Map("map", {
+                center: center || [116.397428, 39.90923],
+                zoom: zoom || 12,
+                viewMode: "3D",
+                pitch: 0,
+                rotation: 0,
+                showBuildingBlock: true,
+                showLabel: true
+            });
+
+            // 初始化地图功能组件
+            initMapComponents();
+
+            // 添加事件监听
+            AppState.map.on("click", onMapClick);
+            AppState.map.on("mousemove", throttle(onMapMouseMove, 100));
+
+            log('✓ 地图初始化完成！');
+        }
+
+        function loadAMapScript(apiKey) {
+            return new Promise((resolve, reject) => {
+                log('正在加载gaode地图 API...');
+                const script = document.createElement("script");
+                script.src = `https://webapi.amap.com/maps?v=2.0&key=${apiKey}&plugin=AMap.Geocoder,AMap.PlaceSearch,AMap.Driving,AMap.Walking,AMap.Riding,AMap.Transfer,AMap.MouseTool,AMap.CitySearch`;
+
+                const timeoutId = setTimeout(() => reject(new Error("地图 API 加载超时（30秒）")), 30000);
+
+                script.onload = () => { clearTimeout(timeoutId); log("地图 API 脚本加载完成"); resolve(); };
+                script.onerror = () => { clearTimeout(timeoutId); reject(new Error("地图 API 脚本加载失败")); };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        async function waitForAMap() {
+            await new Promise(r => setTimeout(r, 500));
+            if (typeof AMap === "undefined") throw new Error("AMap 对象未定义");
+            log("AMap 对象就绪");
+        }
+
+        function initMapComponents() {
+            AppState.geocoder = new AMap.Geocoder();
+            AppState.placeSearch = new AMap.PlaceSearch({ city: "全国", citylimit: false, pageSize: 1 });
+
+            AppState.navigators.driving = new AMap.Driving({ map: AppState.map, panel: null });
+            AppState.navigators.walking = new AMap.Walking({ map: AppState.map, panel: null });
+            AppState.navigators.riding = new AMap.Riding({ map: AppState.map, panel: null });
+            AppState.navigators.transfer = new AMap.Transfer({ map: AppState.map, panel: null, city: "全国" });
+
+            AppState.mouseTool = new AMap.MouseTool(AppState.map);
+
+            // 自动检测当前城市并设置搜索范围（IP定位），无效
+            const citySearch = new AMap.CitySearch();
+            citySearch.getLocalCity(function(status, result) {
+                if (status === 'complete' && result.info === 'OK') {
+                    const city = typeof result === 'string' ? result : (result.city || '');
+                    if (city) { AppState.placeSearch.setCity(city); setCityDisplay(city); log('搜索城市: ' + city); }
+                }
+            });
+
+            log('✓ 地图组件初始化完成');
+        }
+
+        // =====================
+        // 地图事件处理
+        // =====================
+        function onMapMouseMove(e) {
+            const lng = e.lnglat.getLng();
+            const lat = e.lnglat.getLat();
+            AppState.currentLng = lng;
+            AppState.currentLat = lat;
+            document.getElementById('coord-display').textContent =
+                `经度: ${lng.toFixed(6)}\n纬度: ${lat.toFixed(6)}`;
+            sendToServer('onCoordinateUpdate', { lng, lat });
+        }
+
+        function onMapClick(e) {
+            const lng = e.lnglat.getLng();
+            const lat = e.lnglat.getLat();
+            const marker = addMarker(lng, lat);
+
+            // 本地更新坐标显示（无需后端）
+            AppState.currentLng = lng;
+            AppState.currentLat = lat;
+            document.getElementById('coord-display').textContent =
+                `经度: ${lng.toFixed(6)}\n纬度: ${lat.toFixed(6)}`;
+
+            AppState.geocoder.getAddress([lng, lat], (status, result) => {
+                let address;
+                if (status === "complete" && result.info === "OK") {
+                    address = result.regeocode?.formattedAddress || "未找到地址信息";
+                } else if (result === "INVALID_USER_KEY" || (typeof result === "string" && result.includes("INVALID"))) {
+                    address = "⚠️ API Key 未开通逆地理编码服务，请到gaode控制台开通";
+                } else if (status === "error") {
+                    address = `⚠️ 逆地理编码失败: ${typeof result === "string" ? result : JSON.stringify(result)}`;
+                } else {
+                    address = "未找到地址信息";
+                }
+                // 本地更新地址信息
+                document.getElementById('location-info').textContent =
+                    `位置信息: (${lng.toFixed(6)}, ${lat.toFixed(6)})\n- ${address}`;
+                // 在标记上方显示地址名称 + 添加到标记记录列表
+                if (marker && address && address !== "未找到地址信息" && !address.startsWith("⚠️")) {
+                    const shortName = address.length > 16 ? address.substring(address.indexOf('区')+1 || 0, 20) : address;
+                    marker.setLabel({
+                        content: `<div style="background:#313244;color:#cdd6f4;padding:3px 8px;border-radius:4px;font-size:11px;white-space:nowrap;">${shortName}</div>`,
+                        direction: 'top',
+                        offset: new AMap.Pixel(0, -8)
+                    });
+                    // 添加到标记记录
+                    AppState.markerRecords.unshift({ lng, lat, name: shortName, address });
+                    if (AppState.markerRecords.length > 10) AppState.markerRecords.length = 10;
+                    LocalBackend.saveMarkers(AppState.markerRecords);
+                    renderMarkerList();
+                }
+                sendToServer('onLocationFound', { lng, lat, address });
+            });
+        }
+
+        // =====================
+        // 标记管理
+        // =====================
+        function addMarker(lng, lat, title = "") {
+            const markerContent = `
+                <div style="position:relative;">
+                    <div style="
+                        width:20px;height:20px;
+                        background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                        border:2px solid white;border-radius:50% 50% 50% 0;
+                        transform:rotate(-45deg);
+                        box-shadow:0 2px 6px rgba(0,0,0,0.3);position:relative;
+                    ">
+                        <div style="
+                            width:8px;height:8px;background:white;border-radius:50%;
+                            position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                        "></div>
+                    </div>
+                </div>`;
+
+            const marker = new AMap.Marker({
+                position: [lng, lat],
+                title: title || `标记 ${AppState.markers.length + 1}`,
+                map: AppState.map,
+                content: markerContent,
+                offset: new AMap.Pixel(-10, -23),
+                zIndex: 100
+            });
+
+            AppState.markers.push(marker);
+            log(`✓ 标记已添加: ${title} at [${lng}, ${lat}]`);
+            return marker;
+        }
+
+        function clearAllMarkers() {
+            AppState.markers.forEach(m => m.setMap(null));
+            AppState.markers = [];
+            log('已清除所有标记');
+        }
+
+        // =====================
+        // 地图样式切换
+        // =====================
+        document.getElementById('style-select').addEventListener('change', function() {
+            changeMapStyle(this.value);
+        });
+
+        function changeMapStyle(style) {
+            if (!AppState.map) return;
+            const { map, layers } = AppState;
+
+            try {
+                switch(style) {
+                    case "street":
+                        map.setMapStyle("amap://styles/normal");
+                        map.setPitch(0); map.setRotation(0);
+                        if (layers.buildings) { map.remove(layers.buildings); layers.buildings = null; }
+                        if (layers.satellite) { map.remove([layers.satellite, layers.roadNet]); }
+                        log("✓ 已切换到街道地图（2D）");
+                        break;
+                    case "3d":
+                        map.setMapStyle("amap://styles/normal");
+                        if (layers.satellite) { map.remove([layers.satellite, layers.roadNet]); }
+                        map.setPitch(60); map.setRotation(0);
+                        if (map.getZoom() < 16) map.setZoom(17);
+                        if (layers.buildings) map.remove(layers.buildings);
+                        layers.buildings = new AMap.Buildings({ zooms: [16, 20], zIndex: 10, heightFactor: 1.5 });
+                        layers.buildings.setMap(map);
+                        log("✓ 已切换到 3D 楼宇地图");
+                        break;
+                    case "terrain":
+                        map.setMapStyle("amap://styles/normal");
+                        if (layers.buildings) { map.remove(layers.buildings); layers.buildings = null; }
+                        if (layers.satellite) { map.remove([layers.satellite, layers.roadNet]); }
+                        map.setPitch(70); map.setRotation(0);
+                        if (map.getZoom() > 13) map.setZoom(12);
+                        log("✓ 已切换到 3D 地形图");
+                        break;
+                    case "satellite":
+                        map.setMapStyle("amap://styles/normal");
+                        map.setPitch(0); map.setRotation(0);
+                        if (layers.buildings) { map.remove(layers.buildings); layers.buildings = null; }
+                        if (!layers.satellite) layers.satellite = new AMap.TileLayer.Satellite();
+                        if (!layers.roadNet) layers.roadNet = new AMap.TileLayer.RoadNet();
+                        map.add([layers.satellite, layers.roadNet]);
+                        log("✓ 已切换到卫星影像图");
+                        break;
+                }
+            } catch(e) { console.error("切换地图样式失败:", e); }
+        }
+
+        // =====================
+        // POI 搜索
+        // =====================
+        function searchPlace(keyword) {
+            if (AppState.searchCache.has(keyword)) {
+                log(`从缓存获取: ${keyword}`);
+                return Promise.resolve(AppState.searchCache.get(keyword));
+            }
+            return new Promise((resolve, reject) => {
+                if (!AppState.placeSearch) { reject(new Error("placeSearch未初始化")); return; }
+                AppState.placeSearch.search(keyword, (status, result) => {
+                    if (status === "complete" && result?.poiList?.pois?.length > 0) {
+                        const poi = result.poiList.pois[0];
+                        const location = poi.location ? [poi.location.lng, poi.location.lat] : null;
+                        if (location) {
+                            AppState.searchCache.set(keyword, { poi, location });
+                            resolve({ poi, location });
+                        } else { reject(new Error("POI 数据不完整")); }
+                    } else { reject(new Error(`未找到地点: ${keyword}`)); }
+                });
+            });
+        }
+
+        function searchPOIFromUI() {
+            const keyword = document.getElementById('search-input').value.trim();
+            if (!keyword) { alert('请输入搜索关键词'); return; }
+            searchPOI(keyword);
+        }
+
+        async function searchPOI(keyword) {
+            try {
+                if (!AppState.map || !AppState.placeSearch) { log("地图或搜索功能未初始化"); return; }
+                const { poi, location } = await searchPlace(keyword);
+                log(`搜索到POI: ${poi.name}，坐标: [${location[0]}, ${location[1]}]`);
+                clearAllMarkers();
+                const marker = addMarker(location[0], location[1], poi.name);
+
+                // 本地更新坐标和地址
+                AppState.currentLng = location[0];
+                AppState.currentLat = location[1];
+                document.getElementById('coord-display').textContent =
+                    `经度: ${location[0].toFixed(6)}\n纬度: ${location[1].toFixed(6)}`;
+                document.getElementById('location-info').textContent =
+                    `位置信息: (${location[0].toFixed(6)}, ${location[1].toFixed(6)})\n- ${poi.address || poi.name}`;
+
+                setTimeout(() => AppState.map.setZoomAndCenter(12, location), 100);
+
+                // 搜索结果标签 — 与地图点击标记相同的样式，显示在指针上方
+                if (marker) {
+                    marker.setLabel({
+                        content: `<div style="background:#313244;color:#cdd6f4;padding:4px 8px;border-radius:4px;font-size:11px;line-height:1.4;"><b>${poi.name}</b><br>${poi.address || "暂无地址"}</div>`,
+                        direction: 'top',
+                        offset: new AMap.Pixel(0, -8)
+                    });
+                }
+
+                sendToServer('onSearchResult', {
+                    name: poi.name, address: poi.address || "", lng: location[0], lat: location[1], keyword
+                });
+
+                // 本地记录搜索历史 + 刷新
+                LocalBackend.addHistory(keyword);
+                loadHistory();
+            } catch(error) { log(error.message); }
+        }
+
+        function quickSearch(keyword) {
+            document.getElementById('search-input').value = keyword;
+            searchPOI(keyword);
+        }
+
+        // =====================
+        // 路线规划
+        // =====================
+        function planRouteFromUI() {
+            const start = document.getElementById('route-start').value.trim();
+            const end = document.getElementById('route-end').value.trim();
+            const travelMode = document.getElementById('travel-mode-select').value;
+            const strategy = document.getElementById('strategy-select').value;
+            const avoidHighway = document.getElementById('avoid-highway').checked;
+            const avoidTolls = document.getElementById('avoid-tolls').checked;
+            const scheduled = document.getElementById('scheduled-radio').checked;
+            const departureTime = scheduled ? document.getElementById('departure-datetime').value : null;
+
+            if (!start || !end) { alert('请输入起点和终点'); return; }
+
+            const options = {
+                start, end, waypoints: [], travelMode, strategy,
+                preferences: { avoidHighway, avoidTolls },
+                departureTime
+            };
+
+            planRouteWithOptions(options);
+        }
+
+        async function planRouteWithOptions(options) {
+            if (!AppState.map || !AppState.placeSearch) {
+                log("地图或搜索功能未初始化"); return;
+            }
+
+            log("开始多方案路线规划...");
+
+            // 解析地点坐标
+            resolveLocations(options, async (locations) => {
+                if (!locations.start) { log(`未找到起点 "${options.start}"`); return; }
+                if (!locations.end) { log(`未找到终点 "${options.end}"`); return; }
+
+                const { start, end, waypoints } = locations;
+
+                // 公交模式特殊处理
+                if (options.travelMode === "transit") {
+                    AppState.navigators.transfer.search(start, end, (status, result) => {
+                        if (status === "complete" && result?.plans?.length > 0) {
+                            AppState.routePlanning.plans = result.plans.map((plan, index) => {
+                                const distance = plan.distance ? (plan.distance / 1000).toFixed(2) + " 公里" : "未知";
+                                const duration = plan.time ? Math.floor(plan.time / 60) + " 分钟" : "未知";
+                                const tolls = plan.cost ? plan.cost + " 元" : "免费";
+                                const steps = extractNavigationSteps(plan, "transit");
+
+                                let planName = `方案${index + 1}`;
+                                if (plan.railway) planName = "地铁优先";
+                                else if (steps.some(s => s.action && s.action.includes("地铁"))) planName = "地铁换乘";
+                                else planName = "公交直达";
+
+                                return { strategy: "TRANSIT_" + index, type: planName, distance, duration, tolls, route: plan, steps, navigator: AppState.navigators.transfer, start, end, waypoints, travelMode: "transit" };
+                            });
+
+                            // 本地显示路线方案
+                            displayRoutePlans(AppState.routePlanning.plans.map(p => ({ strategy: p.strategy, type: p.type, distance: p.distance, duration: p.duration, tolls: p.tolls })));
+                            const resultData = {
+                                plans: AppState.routePlanning.plans.map(p => ({ strategy: p.strategy, type: p.type, distance: p.distance, duration: p.duration, tolls: p.tolls })),
+                                selectedIndex: 0
+                            };
+                            sendToServer('onMultiRouteResult', JSON.stringify(resultData));
+                            selectRoutePlan(0);
+                        } else { log("公交路线规划失败"); }
+                    });
+                    return;
+                }
+
+                // 其他模式：多策略规划
+                let strategies = options.travelMode === "driving" ? ["LEAST_TIME", "LEAST_DISTANCE", "REAL_TRAFFIC"] : ["LEAST_TIME"];
+                const planPromises = strategies.map(s => planWithStrategy(start, end, waypoints, s, options.travelMode));
+                const plans = (await Promise.all(planPromises)).filter(p => p !== null);
+
+                if (plans.length === 0) { log("所有路线规划方案都失败了"); return; }
+
+                AppState.routePlanning.plans = plans;
+
+                // 本地显示路线方案
+                displayRoutePlans(plans.map(p => ({ strategy: p.strategy, type: p.type, distance: p.distance, duration: p.duration, tolls: p.tolls })));
+                const result = {
+                    plans: plans.map(p => ({ strategy: p.strategy, type: p.type, distance: p.distance, duration: p.duration, tolls: p.tolls })),
+                    selectedIndex: 0
+                };
+                sendToServer('onMultiRouteResult', JSON.stringify(result));
+                selectRoutePlan(0);
+            });
+        }
+
+        function resolveLocations(options, callback) {
+            const tasks = [];
+            tasks.push(new Promise(resolve => {
+                AppState.placeSearch.search(options.start, (status, result) => {
+                    if (status === "complete" && result?.poiList?.pois?.length > 0) {
+                        const poi = result.poiList.pois[0];
+                        resolve(["start", poi.location ? [poi.location.lng, poi.location.lat] : null]);
+                    } else { resolve(["start", null]); }
+                });
+            }));
+            tasks.push(new Promise(resolve => {
+                AppState.placeSearch.search(options.end, (status, result) => {
+                    if (status === "complete" && result?.poiList?.pois?.length > 0) {
+                        const poi = result.poiList.pois[0];
+                        resolve(["end", poi.location ? [poi.location.lng, poi.location.lat] : null]);
+                    } else { resolve(["end", null]); }
+                });
+            }));
+
+            Promise.all(tasks).then(results => {
+                const locations = { start: null, end: null, waypoints: [] };
+                results.forEach(r => {
+                    if (r[0] === "start") locations.start = r[1];
+                    else if (r[0] === "end") locations.end = r[1];
+                });
+                callback(locations);
+            });
+        }
+
+        function planWithStrategy(start, end, waypoints, strategy, travelMode) {
+            return new Promise(resolve => {
+                try {
+                    const navigator = getNavigatorByMode(travelMode);
+                    if (!navigator) { resolve(null); return; }
+
+                    if (travelMode === "driving" && navigator.setPolicy) {
+                        const policyMap = {
+                            "LEAST_TIME": AMap.DrivingPolicy.LEAST_TIME,
+                            "LEAST_DISTANCE": AMap.DrivingPolicy.LEAST_DISTANCE,
+                            "REAL_TRAFFIC": AMap.DrivingPolicy.REAL_TRAFFIC,
+                            "LEAST_FEE": AMap.DrivingPolicy.LEAST_FEE
+                        };
+                        if (policyMap[strategy]) navigator.setPolicy(policyMap[strategy]);
+                    }
+
+                    const timeoutId = setTimeout(() => {
+                        // 超时距离检查（复刻原版逻辑）
+                        if (travelMode === "walking" || travelMode === "riding") {
+                            const dist = calculateDistance(start[0], start[1], end[0], end[1]);
+                            if (dist > 15000) {
+                                log(`${travelMode === "walking" ? "步行" : "骑行"}距离过长（约${(dist/1000).toFixed(1)}公里），gaode地图可能不支持。建议：1）选择较短距离 2）使用驾车或公交模式`);
+                            } else {
+                                log(`${travelMode === "walking" ? "步行" : "骑行"}路线规划超时，请稍后重试或选择其他出行方式`);
+                            }
+                        } else {
+                            log(`路线规划超时（15秒）: ${travelMode}, ${strategy}`);
+                        }
+                        resolve(null);
+                    }, 15000);
+
+                    const wrappedCallback = function(status, result) {
+                        clearTimeout(timeoutId);
+                        if (status === "complete" && result) {
+                            let route, distance, duration, tolls;
+                            if (travelMode === "transit") {
+                                if (result.plans?.length > 0) {
+                                    const plan = result.plans[0];
+                                    route = plan;
+                                    distance = plan.distance ? (plan.distance / 1000).toFixed(2) + " 公里" : "未知";
+                                    duration = plan.time ? Math.floor(plan.time / 60) + " 分钟" : "未知";
+                                    tolls = plan.cost ? plan.cost + " 元" : "免费";
+                                } else { resolve(null); return; }
+                            } else {
+                                if (result.routes?.length > 0) {
+                                    route = result.routes[0];
+                                    distance = route.distance ? (route.distance / 1000).toFixed(2) + " 公里" : "未知";
+                                    duration = route.time ? Math.floor(route.time / 60) + " 分钟" : "未知";
+                                    tolls = (travelMode === "driving" && route.tolls) ? route.tolls + " 元" : "无";
+                                } else { resolve(null); return; }
+                            }
+
+                            const steps = extractNavigationSteps(route, travelMode);
+                            resolve({ strategy, type: getStrategyName(strategy), distance, duration, tolls, route, steps, navigator, start, end, waypoints, travelMode });
+                        } else { resolve(null); }
+                    };
+
+                    if (travelMode === "driving") {
+                        const searchOpts = waypoints?.length > 0 ? { waypoints } : {};
+                        navigator.search(start, end, searchOpts, wrappedCallback);
+                    } else if (travelMode === "walking" || travelMode === "riding") {
+                        navigator.search(start, end, wrappedCallback);
+                    } else if (travelMode === "transit") {
+                        navigator.search(start, end, wrappedCallback);
+                    } else { clearTimeout(timeoutId); resolve(null); }
+                } catch(e) { resolve(null); }
+            });
+        }
+
+        function clearCurrentRoute() {
+            if (AppState.currentRoute) {
+                AppState.currentRoute.clear();
+                AppState.currentRoute = null;
+            }
+            AppState.routePlanning.plans = [];
+            document.getElementById('route-plans-list').innerHTML = '';
+            document.getElementById('route-plans-group').style.display = 'none';
+            document.getElementById('nav-steps-list').innerHTML = '';
+            document.getElementById('nav-steps-group').style.display = 'none';
+            log("已清除当前路线");
+        }
+
+        function getNavigatorByMode(mode) {
+            const map = { "driving": "driving", "walking": "walking", "riding": "riding", "transit": "transfer" };
+            return AppState.navigators[map[mode] || "driving"];
+        }
+
+        function selectRoutePlan(planIndex) {
+            if (planIndex < 0 || planIndex >= AppState.routePlanning.plans.length) return;
+            AppState.routePlanning.selectedIndex = planIndex;
+            const plan = AppState.routePlanning.plans[planIndex];
+            log(`已选择方案 ${planIndex + 1}: ${plan.type}`);
+
+            // 清除地图上的旧路线（保留UI方案列表）
+            if (AppState.currentRoute) {
+                AppState.currentRoute.clear();
+                AppState.currentRoute = null;
+            }
+
+            if (plan.navigator) {
+                const cb = function(status, result) {
+                    if (status === "complete") { AppState.currentRoute = plan.navigator; }
+                };
+                if (plan.travelMode === "driving") {
+                    const opts = plan.waypoints?.length > 0 ? { waypoints: plan.waypoints } : {};
+                    plan.navigator.search(plan.start, plan.end, opts, cb);
+                } else {
+                    plan.navigator.search(plan.start, plan.end, cb);
+                }
+            }
+
+            // 本地显示导航步骤
+            if (plan.steps?.length > 0) {
+                displayNavSteps(plan.steps);
+                sendToServer('onNavigationSteps', JSON.stringify(plan.steps));
+            }
+
+            if (AppState.map?.setFitView) {
+                AppState.map.setFitView(null, false, [100, 100, 100, 100]);
+            }
+        }
+
+        function extractNavigationSteps(route, travelMode) {
+            try {
+                if (travelMode === "transit") {
+                    if (!route?.segments?.length) return [];
+                    const steps = [];
+                    let stepNum = 1;
+                    route.segments.forEach(segment => {
+                        if (!segment) return;
+                        if (segment.transit_mode === "WALK") {
+                            steps.push({ stepNum: stepNum++, instruction: `步行 ${Math.round(segment.distance || 0)} 米`, road: "步行", distance: ((segment.distance || 0) / 1000).toFixed(2) + " 公里", duration: Math.floor((segment.time || 0) / 60) + " 分钟", action: "步行" });
+                        } else if (segment.transit?.lines) {
+                            segment.transit.lines.forEach(line => {
+                                if (!line) return;
+                                let vehicleType = "🚌 公交";
+                                const lineName = (line.name || "未知线路").toString();
+                                if ((line.type || "").toString().includes("地铁") || line.vehicle === "SUBWAY" || lineName.includes("号线")) {
+                                    vehicleType = "🚇 地铁";
+                                }
+                                let startStop = "起点站", endStop = "终点站";
+                                if (line.departure_stop?.name) startStop = line.departure_stop.name;
+                                else if (typeof line.departure_stop === "string") startStop = line.departure_stop;
+                                if (line.arrival_stop?.name) endStop = line.arrival_stop.name;
+                                else if (typeof line.arrival_stop === "string") endStop = line.arrival_stop;
+
+                                let stationCount = line.via_num || 0;
+                                if (!stationCount && line.via_stops) stationCount = line.via_stops.length;
+
+                                steps.push({ stepNum: stepNum++, instruction: `${vehicleType} ${lineName}（${startStop} -> ${endStop}, ${stationCount}站）`, road: lineName, distance: ((line.distance || segment.distance || 0) / 1000).toFixed(2) + " 公里", duration: Math.floor((line.time || segment.time || 0) / 60) + " 分钟", action: vehicleType });
+                            });
+                        }
+                    });
+                    return steps;
+                }
+
+                const stepsArray = travelMode === "riding" ? route.rides : route.steps;
+                if (!stepsArray?.length) return [];
+
+                const actionMap = { "left": "左转", "right": "右转", "straight": "直行", "uturn": "掉头", "arrive": "到达", "start": "出发" };
+                const defaultAction = travelMode === "walking" ? "步行" : travelMode === "riding" ? "骑行" : "行驶";
+
+                return stepsArray.map((step, index) => {
+                    if (!step) return null;
+                    const action = actionMap[step.action] || defaultAction;
+                    const road = step.road || "未知道路";
+                    const distance = step.distance ? (step.distance / 1000).toFixed(2) + " 公里" : "0公里";
+                    const duration = step.time ? Math.floor(step.time / 60) + " 分钟" : "0分钟";
+                    let instruction = step.instruction || `${action}沿${road}`;
+                    if (travelMode === "riding") instruction = instruction.replace(/步行/g, "骑行");
+                    else if (travelMode === "driving") instruction = instruction.replace(/步行/g, "行驶");
+                    return { stepNum: index + 1, instruction, road, distance, duration, action };
+                }).filter(s => s !== null);
+            } catch(e) { console.error("提取导航步骤异常:", e); return []; }
+        }
+
+        function getStrategyName(strategy) {
+            const names = { "LEAST_TIME": "推荐路线", "LEAST_DISTANCE": "最短距离", "REAL_TRAFFIC": "避开拥堵", "LEAST_FEE": "最经济" };
+            return names[strategy] || "路线方案";
+        }
+
+        /**
+         * 计算两点之间的距离（米）- 复刻原版
+         * @param {number} lng1 - 起点经度
+         * @param {number} lat1 - 起点纬度
+         * @param {number} lng2 - 终点经度
+         * @param {number} lat2 - 终点纬度
+         * @returns {number} 距离（米）
+         */
+        function calculateDistance(lng1, lat1, lng2, lat2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function displayRoutePlans(plans) {
+            const listEl = document.getElementById('route-plans-list');
+            listEl.innerHTML = '';
+            if (!plans?.length) {
+                document.getElementById('route-plans-group').style.display = 'none';
+                return;
+            }
+            plans.forEach((plan, idx) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.textContent = `${plan.type} | ${plan.distance} | ${plan.duration} | ${plan.tolls}`;
+                div.onclick = () => selectRoutePlan(idx);
+                listEl.appendChild(div);
+            });
+            document.getElementById('route-plans-group').style.display = 'block';
+        }
+
+        function displayNavSteps(steps) {
+            const listEl = document.getElementById('nav-steps-list');
+            listEl.innerHTML = '';
+            if (!steps?.length) {
+                listEl.innerHTML = '<div class="list-item">暂无导航步骤信息</div>';
+                document.getElementById('nav-steps-group').style.display = 'block';
+                return;
+            }
+            steps.forEach(step => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.style.whiteSpace = 'pre-line';
+                div.textContent = `${step.stepNum}. ${step.instruction}\n   ${step.distance} | ${step.duration}`;
+                listEl.appendChild(div);
+            });
+            document.getElementById('nav-steps-group').style.display = 'block';
+        }
+
+        // =====================
+        // 测距工具
+        // =====================
+        function toggleMeasurement() {
+            AppState.measurement.enabled = !AppState.measurement.enabled;
+            const btn = document.getElementById('btn-measure');
+            if (AppState.measurement.enabled) {
+                enableMeasurement();
+                btn.textContent = '🛑 禁用测距';
+                btn.className = 'btn-danger';
+            } else {
+                disableMeasurement();
+                btn.textContent = '📏 启用测距';
+                btn.className = 'btn-primary';
+            }
+        }
+
+        function enableMeasurement() {
+            if (!AppState.mouseTool) return;
+            cleanupMeasurementListeners();
+            AppState.measurement.enabled = true;
+            AppState.mouseTool.rule({
+                startMarkerOptions: { icon: new AMap.Icon({ size: new AMap.Size(19, 31), imageSize: new AMap.Size(19, 31), image: "https://webapi.amap.com/theme/v1.3/markers/b/start.png" }) },
+                endMarkerOptions: { icon: new AMap.Icon({ size: new AMap.Size(19, 31), imageSize: new AMap.Size(19, 31), image: "https://webapi.amap.com/theme/v1.3/markers/b/end.png" }), offset: new AMap.Pixel(-9, -31) },
+                lineOptions: { strokeStyle: "solid", strokeColor: "#FF33FF", strokeOpacity: 1, strokeWeight: 2 }
+            });
+            AppState.measurement.drawListener = (event) => {
+                const distance = (event.obj.getLength() / 1000).toFixed(2);
+                const msg = `测距完成: ${distance} 公里`;
+                log(msg);
+                // 本地弹窗提示测距结果
+                alert(msg);
+                sendToServer('onMeasurementResult', msg);
+            };
+            AppState.mouseTool.on("draw", AppState.measurement.drawListener);
+            log("测距工具已启用");
+        }
+
+        function disableMeasurement() {
+            cleanupMeasurementListeners();
+            AppState.measurement.enabled = false;
+            if (AppState.mouseTool) AppState.mouseTool.close(true);
+            log("测距工具已禁用");
+        }
+
+        function clearMeasurement() {
+            cleanupMeasurementListeners();
+            if (AppState.mouseTool) AppState.mouseTool.close(true);
+            if (AppState.measurement.enabled) setTimeout(enableMeasurement, 100);
+            log("测距已清除");
+        }
+
+        function cleanupMeasurementListeners() {
+            if (AppState.measurement.drawListener && AppState.mouseTool) {
+                AppState.mouseTool.off("draw", AppState.measurement.drawListener);
+                AppState.measurement.drawListener = null;
+            }
+        }
+
+        // =====================
+        // 路况图层
+        // =====================
+        function setCityDisplay(city) {
+            const el = document.getElementById('current-city');
+            if (el) el.textContent = city || '全国';
+        }
+
+        function toggleTrafficUI() {
+            AppState.trafficEnabled = !AppState.trafficEnabled;
+            const btn = document.getElementById('btn-toggle-traffic');
+            if (AppState.trafficEnabled) {
+                if (!AppState.layers.traffic) {
+                    AppState.layers.traffic = new AMap.TileLayer.Traffic({ zIndex: 10, autoRefresh: true, interval: 300 });
+                }
+                AppState.map.add(AppState.layers.traffic);
+                btn.textContent = '隐藏路况图层';
+                log("实时路况图层已开启");
+            } else {
+                if (AppState.layers.traffic) AppState.map.remove(AppState.layers.traffic);
+                btn.textContent = '显示路况图层';
+                log("实时路况图层已关闭");
+            }
+        }
+
+        // 通过 @capacitor/geolocation 原生插件获取 GPS（底层 FusedLocationProvider）
+        async function getNativeLocation() {
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins?.Geolocation?.getCurrentPosition) {
+                const r = await Capacitor.Plugins.Geolocation.getCurrentPosition({
+                    enableHighAccuracy: true,
+                    timeout: 10000
+                });
+                if (r?.coords) return { lng: r.coords.longitude, lat: r.coords.latitude };
+            }
+            throw new Error('定位失败，请检查位置权限');
+        }
+
+        async function locateForRouteStart() {
+            try {
+                const { lng, lat } = await getNativeLocation();
+                window.injectLocationForRoute(lng, lat);
+            } catch(e) { alert('定位失败: ' + e.message); }
+        }
+
+        async function locateCurrentPosition() {
+            try {
+                const { lng, lat } = await getNativeLocation();
+                window.injectLocation(lng, lat);
+            } catch(e) { alert('定位失败: ' + e.message); }
+        }
+
+        // =====================
+        // 坐标工具
+        // =====================
+        function copyCoordinate() {
+            const text = `${AppState.currentLng.toFixed(6)}, ${AppState.currentLat.toFixed(6)}`;
+            navigator.clipboard.writeText(text).then(() => {
+                log(`坐标已复制: ${text}`);
+            }).catch(() => {
+                // 降级方案
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                log(`坐标已复制: ${text}`);
+            });
+        }
+
+        function loadFavoriteFromLocal(favId) {
+            const fav = LocalBackend.loadFavorite(favId);
+            if (fav) loadFavoriteToUI(fav);
+        }
+
+        function loadFavoriteToUI(fav) {
+            document.getElementById('route-start').value = fav.start;
+            document.getElementById('route-end').value = fav.end;
+            // 设置出行方式
+            const travelSelect = document.getElementById('travel-mode-select');
+            for (let i = 0; i < travelSelect.options.length; i++) {
+                if (travelSelect.options[i].value === fav.travelMode) {
+                    travelSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            // 设置偏好
+            const prefs = fav.preferences || {};
+            const strategySelect = document.getElementById('strategy-select');
+            for (let i = 0; i < strategySelect.options.length; i++) {
+                if (strategySelect.options[i].value === prefs.strategy) {
+                    strategySelect.selectedIndex = i;
+                    break;
+                }
+            }
+            document.getElementById('avoid-highway').checked = prefs.avoidHighway || false;
+            document.getElementById('avoid-tolls').checked = prefs.avoidTolls || false;
+            log(`已加载收藏路线: ${fav.name}`);
+        }
+
+        // =====================
+        // 出发时间切换
+        // =====================
+        function toggleDepartureTime() {
+            document.getElementById('departure-datetime').disabled = !document.getElementById('scheduled-radio').checked;
+        }
+
+        // =====================
+        // 标签页切换
+        // =====================
+        document.querySelectorAll('#panel-tabs button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#panel-tabs button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // =====================
+        // 出行方式切换 — 显示/隐藏路线偏好
+        // =====================
+        document.getElementById('travel-mode-select').addEventListener('change', function() {
+            const isDriving = this.value === 'driving';
+            document.getElementById('pref-group').style.display = isDriving ? 'block' : 'none';
+            AppState.routePlanning.travelMode = this.value;
+        });
+
+        // =====================
+        // 启动
+        // =====================
+        checkConfig();
+    </script>
+</body>
+</html>

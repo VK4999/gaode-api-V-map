@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">V·地图</string>
+    <string name="title_activity_main">V·地图</string>
+    <string name="package_name">com.gaode.map</string>
+</resources>

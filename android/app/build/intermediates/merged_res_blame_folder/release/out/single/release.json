@@ -1,0 +1,86 @@
+[
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/xml_config.xml.flat",
+        "source": "com.gaode.map.app-main-28:/xml/config.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-mdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-mdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-hdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.gaode.map.app-main-28:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.gaode.map.app-main-28:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-hdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-mdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/xml_network_security_config.xml.flat",
+        "source": "com.gaode.map.app-main-28:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.gaode.map.app-merged_res-27:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.gaode.map.app-main-28:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
+    }
+]

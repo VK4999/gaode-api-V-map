@@ -1,0 +1,18 @@
+// ================================================================
+// 项目级 build.gradle（根目录）
+// ================================================================
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.0'
+    }
+}
+
+// 仓库由 settings.gradle 的 dependencyResolutionManagement 统一管理
+
+task clean(type: Delete) {
+    delete rootProject.layout.buildDirectory
+}

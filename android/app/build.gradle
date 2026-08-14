@@ -1,0 +1,78 @@
+// ================================================================
+// 模块级 build.gradle（app 目录）
+// ================================================================
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.gaode.map'
+    compileSdk 34
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    defaultConfig {
+        applicationId "com.gaode.map"
+        minSdk 26          // Android 8.0（前台服务最低要求）
+        targetSdk 34       // Android 14
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // 传递给 Java 代码的构建变量
+        buildConfigField "String", "BACKEND_BINARY_NAME", '"amap_server"'
+        buildConfigField "int", "BACKEND_PORT", "8080"
+        buildConfigField "String", "BACKEND_HOST", '"127.0.0.1"'
+
+        aaptOptions {
+            // 不压缩 .bin 文件（确保 assets 中的二进制可被正确读取）
+            noCompress "bin"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+        release {
+            signingConfig signingConfigs.debug  // 使用 debug 签名
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // 打包选项
+    packagingOptions {
+        // 排除 Capacitor 可能重复的文件
+        resources {
+            excludes += ['META-INF/LICENSE.md', 'META-INF/NOTICE.md']
+        }
+    }
+}
+
+dependencies {
+    // AndroidX 核心库
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.9.0'
+
+    // Capacitor 核心
+    implementation project(':capacitor-android')
+
+    // Capacitor 插件
+    implementation project(':capacitor-geolocation')
+
+    // 测试
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+}

@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app"
+    name=":app"
+    type="APP"
+    maven="gaode-map:app:"
+    agpVersion="8.2.0"
+    buildFolder="build"
+    bootClassPath="C:\Users\MY\AppData\Local\Android\Sdk\platforms\android-34\android.jar;C:\Users\MY\AppData\Local\Android\Sdk\build-tools\34.0.0\core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-34"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

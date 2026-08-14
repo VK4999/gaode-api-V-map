@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#3DDC84</color>
+    <string name="app_name">V·地图</string>
+    <string name="package_name">com.gaode.map</string>
+    <string name="title_activity_main">V·地图</string>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#1e1e2e</item>
+        <item name="android:navigationBarColor">#1e1e2e</item>
+        <item name="android:windowBackground">#1e1e2e</item>
+    </style>
+</resources>

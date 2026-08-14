@@ -1,0 +1,10 @@
+{
+	"appId": "com.gaode.map",
+	"appName": "V·地图",
+	"webDir": "www",
+	"android": {
+		"allowMixedContent": true,
+		"captureInput": true,
+		"webContentsDebuggingEnabled": true
+	}
+}

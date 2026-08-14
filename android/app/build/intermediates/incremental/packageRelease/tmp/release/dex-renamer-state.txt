@@ -1,0 +1,4 @@
+#Fri Aug 14 23:50:00 CST 2026
+base.0=D\:\\高德\\高德地图桌面应用_带登录界面\\gaode-capacitor\\android\\app\\build\\intermediates\\dex\\release\\mergeDexRelease\\classes.dex
+path.0=classes.dex
+renamed.0=classes.dex

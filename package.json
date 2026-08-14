@@ -1,0 +1,23 @@
+{
+  "name": "gaode-map",
+  "version": "1.0.0",
+  "description": "V·地图 Android 应用 — Capacitor + FastAPI 后端",
+  "main": "www/index.html",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open": "npx cap open android",
+    "build:debug": "cd android && ./gradlew assembleDebug",
+    "build:release": "cd android && ./gradlew assembleRelease",
+    "clean": "cd android && ./gradlew clean"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/geolocation": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

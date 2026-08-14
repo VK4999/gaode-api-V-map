@@ -1,0 +1,198 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.gaode.map"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- ============================================================ -->
+12    <!-- 权限清单 — 仅保留地图必需的定位 + 网络 -->
+13    <!-- ============================================================ -->
+14
+15
+16    <!-- 精确定位（GPS） -->
+17    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+17-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:11:5-79
+17-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:11:22-76
+18    <!-- 粗略定位（基站/WiFi 回退） -->
+19    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+19-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:13:5-81
+19-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:13:22-78
+20
+21    <!-- 网络 -->
+22    <uses-permission android:name="android.permission.INTERNET" />
+22-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:16:5-67
+22-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:16:22-64
+23    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+23-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:17:5-79
+23-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:17:22-76
+24
+25    <!-- ============================================================ -->
+26    <!-- 硬件特性声明 -->
+27    <!-- ============================================================ -->
+28    <uses-feature
+28-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:22:5-24:36
+29        android:name="android.hardware.location"
+29-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:23:9-49
+30        android:required="false" />
+30-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:24:9-33
+31    <uses-feature
+31-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:25:5-27:36
+32        android:name="android.hardware.location.gps"
+32-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:26:9-53
+33        android:required="false" />
+33-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:27:9-33
+34
+35    <permission
+35-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+36        android:name="com.gaode.map.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+36-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+37        android:protectionLevel="signature" />
+37-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+38
+39    <uses-permission android:name="com.gaode.map.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- ============================================================ -->
+39-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+39-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+40    <!-- 应用配置 -->
+41    <!-- ============================================================ -->
+42    <application
+42-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:32:5-62:19
+43        android:allowBackup="true"
+43-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:33:9-35
+44        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+44-->[androidx.core:core:1.12.0] C:\Users\MY\.gradle\caches\transforms-3\740ae0ea3c31e6cd8edc9f94e7ba0f7e\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+45        android:extractNativeLibs="false"
+46        android:hardwareAccelerated="true"
+46-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:40:9-43
+47        android:icon="@mipmap/ic_launcher"
+47-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:34:9-43
+48        android:label="@string/app_name"
+48-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:35:9-41
+49        android:largeHeap="true"
+49-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:41:9-33
+50        android:networkSecurityConfig="@xml/network_security_config"
+50-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:39:9-69
+51        android:supportsRtl="true"
+51-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:36:9-35
+52        android:theme="@style/AppTheme"
+52-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:37:9-40
+53        android:usesCleartextTraffic="true" >
+53-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:38:9-44
+54
+55        <!-- 主 Activity -->
+56        <activity
+56-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:45:9-57:20
+57            android:name="com.gaode.map.MainActivity"
+57-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:46:13-54
+58            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+58-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:47:13-129
+59            android:exported="true"
+59-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:48:13-36
+60            android:launchMode="singleTask"
+60-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:49:13-44
+61            android:screenOrientation="portrait"
+61-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:51:13-49
+62            android:windowSoftInputMode="adjustResize" >
+62-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:50:13-55
+63            <intent-filter>
+63-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:53:13-56:29
+64                <action android:name="android.intent.action.MAIN" />
+64-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:54:17-69
+64-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:54:25-66
+65
+66                <category android:name="android.intent.category.LAUNCHER" />
+66-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:55:17-77
+66-->D:\高德\高德地图桌面应用_带登录界面\gaode-capacitor\android\app\src\main\AndroidManifest.xml:55:27-74
+67            </intent-filter>
+68        </activity>
+69
+70        <!-- 后端后台服务（已废弃：纯前端，无需后端进程） -->
+71        <!-- <service android:name="com.gaode.map.BackendService" ... /> -->
+72
+73        <provider
+73-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+74            android:name="androidx.startup.InitializationProvider"
+74-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+75            android:authorities="com.gaode.map.androidx-startup"
+75-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+76            android:exported="false" >
+76-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+77            <meta-data
+77-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+78                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+78-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+79                android:value="androidx.startup" />
+79-->[androidx.emoji2:emoji2:1.2.0] C:\Users\MY\.gradle\caches\transforms-3\d121cbb831bfcedee4bd4dacef3ca9b6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+80            <meta-data
+80-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\MY\.gradle\caches\transforms-3\9ea9e0b2ba026d72c3db5febde415dc6\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+81                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+81-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\MY\.gradle\caches\transforms-3\9ea9e0b2ba026d72c3db5febde415dc6\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+82                android:value="androidx.startup" />
+82-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\MY\.gradle\caches\transforms-3\9ea9e0b2ba026d72c3db5febde415dc6\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+83            <meta-data
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+84                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+85                android:value="androidx.startup" />
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+86        </provider>
+87
+88        <activity
+88-->[com.google.android.gms:play-services-base:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\23cf7c3eba41f626ffc48a939f14d340\transformed\jetified-play-services-base-18.1.0\AndroidManifest.xml:20:9-22:45
+89            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+89-->[com.google.android.gms:play-services-base:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\23cf7c3eba41f626ffc48a939f14d340\transformed\jetified-play-services-base-18.1.0\AndroidManifest.xml:20:19-85
+90            android:exported="false"
+90-->[com.google.android.gms:play-services-base:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\23cf7c3eba41f626ffc48a939f14d340\transformed\jetified-play-services-base-18.1.0\AndroidManifest.xml:22:19-43
+91            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+91-->[com.google.android.gms:play-services-base:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\23cf7c3eba41f626ffc48a939f14d340\transformed\jetified-play-services-base-18.1.0\AndroidManifest.xml:21:19-78
+92
+93        <meta-data
+93-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\0d13dc95a15827d09d06a81a458cdbd5\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:21:9-23:69
+94            android:name="com.google.android.gms.version"
+94-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\0d13dc95a15827d09d06a81a458cdbd5\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:22:13-58
+95            android:value="@integer/google_play_services_version" />
+95-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\MY\.gradle\caches\transforms-3\0d13dc95a15827d09d06a81a458cdbd5\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:23:13-66
+96
+97        <receiver
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+98            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+99            android:directBootAware="false"
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+100            android:enabled="true"
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+101            android:exported="true"
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+102            android:permission="android.permission.DUMP" >
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+103            <intent-filter>
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+104                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+105            </intent-filter>
+106            <intent-filter>
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+107                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+108            </intent-filter>
+109            <intent-filter>
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+110                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+111            </intent-filter>
+112            <intent-filter>
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+113                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+113-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+113-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\MY\.gradle\caches\transforms-3\07eeb6960b57fb88826243e43d16a4e3\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+114            </intent-filter>
+115        </receiver>
+116    </application>
+117
+118</manifest>

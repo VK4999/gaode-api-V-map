@@ -1,0 +1,26 @@
+# Android Studio 本机IDE配置
+.gradle
+.idea/
+/captures/
+.externalNativeBuild
+.cxx
+/shelf/
+/workspace.xml
+*.iml
+.DS_Store
+
+# 编译输出产物，绝对不上传
+build/
+app/build/
+
+# 本机私有配置（每个人电脑路径不一样）
+local.properties
+
+# 密钥、环境变量（防止密钥泄露）
+*.jks
+*.keystore
+.env
+
+# node前端依赖，绝对不上传
+node_modules/
+package-lock.json
